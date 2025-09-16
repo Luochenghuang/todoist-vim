@@ -204,6 +204,12 @@ pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
             app.show_new_task = true;
             app.new_task = new_task::NewTask::new(selected_id, None);
         }
+    } else if key.code == KeyCode::Char('a') {
+        if let Some(selected) = app.projects.state.selected() {
+            let selected_id = app.projects.projects[selected].id.clone();
+            app.show_new_task = true;
+            app.new_task = new_task::NewTask::new(selected_id, None);
+        }
     } else if key.code == KeyCode::Char('d') {
         if let Some(selected) = app.tasks.state.selected() {
             let index = app.tasks.display_tasks[selected];

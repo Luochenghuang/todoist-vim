@@ -29,7 +29,7 @@ pub fn help(f: &mut Frame) {
         ]),
         Row::new(vec![
             "a",
-            "Press a while on a project to add task to the project",
+            "Press a to add task to the selected project",
         ]),
         Row::new(vec!["o", "Overdue tasks"]),
         Row::new(vec!["e", "All tasks"]),
