@@ -117,7 +117,7 @@ async fn main() -> Result<()> {
         app.projects = projects;
         app.tasks = tasks;
         app.sections = sections;
-        app.tasks.filter_task_list();
+        app.tasks.filter_task_list(true);
         app.tasks.find_tasks_with_children();
     });
 
@@ -145,21 +145,30 @@ async fn main() -> Result<()> {
                         continue;
                     }
 
-                    if key.code == KeyCode::Char('h') {
+                    if key.code == KeyCode::Char('z') {
                         app.show_help = !app.show_help;
+                    } else if key.code == KeyCode::Char('h') {
+                        app.current_focus = CurrentFocus::Projects;
+                        app.tasks.unselect();
+                    } else if key.code == KeyCode::Char('l') {
+                        app.current_focus = CurrentFocus::Tasks;
+                        // Ensure first task is selected when switching to task view
+                        if !app.tasks.display_tasks.is_empty() {
+                            app.tasks.state.select(Some(0));
+                        }
                     } else if key.code == KeyCode::Char('q') {
                         break;
                     } else if key.code == KeyCode::Char('t') {
                         app.tasks.filter = Filter::Today;
-                        app.tasks.filter_task_list();
+                        app.tasks.filter_task_list(true);
                         app.projects.unselect();
                     } else if key.code == KeyCode::Char('o') {
                         app.tasks.filter = Filter::Overdue;
-                        app.tasks.filter_task_list();
+                        app.tasks.filter_task_list(true);
                         app.projects.unselect();
                     } else if key.code == KeyCode::Char('a') {
                         app.tasks.filter = Filter::All;
-                        app.tasks.filter_task_list();
+                        app.tasks.filter_task_list(true);
                         app.projects.unselect();
                     } else if key.code == KeyCode::Char('p') {
                         app.tasks.sort_tasks(tasks::SortCriterion::Priority);
@@ -173,8 +182,17 @@ async fn main() -> Result<()> {
 
                     if key.code == KeyCode::Tab {
                         match app.current_focus {
-                            CurrentFocus::Projects => app.current_focus = CurrentFocus::Tasks,
-                            CurrentFocus::Tasks => app.current_focus = CurrentFocus::Projects,
+                            CurrentFocus::Projects => {
+                                app.current_focus = CurrentFocus::Tasks;
+                                // Ensure first task is selected when switching to task view
+                                if !app.tasks.display_tasks.is_empty() {
+                                    app.tasks.state.select(Some(0));
+                                }
+                            },
+                            CurrentFocus::Tasks => {
+                                app.current_focus = CurrentFocus::Projects;
+                                app.tasks.unselect();
+                            },
                             _ => {}
                         }
                     }
@@ -203,7 +221,7 @@ async fn main() -> Result<()> {
                     if !task_exists {
                         app.tasks.tasks.push(task);
                     }
-                    app.tasks.filter_task_list();
+                    app.tasks.filter_task_list(true);
                 }
                 TaskResult::Error(error_msg) => {
                     app.set_error_message(error_msg);

@@ -96,7 +96,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         Filter::Overdue => " Overdue ",
     };
 
-    let instructions = Line::from(vec![" For help, press ".into(), "h ".blue().bold()]);
+    let instructions = Line::from(vec![" For help, press ".into(), "z ".blue().bold()]);
 
     let tasks_block = Block::default()
         .title(task_title.bold())

@@ -98,7 +98,7 @@ pub fn handle_projects(app: &mut App, key: KeyEvent) {
         if let Some(selected) = app.projects.state.selected() {
             let selected_id = app.projects.projects[selected].id.clone();
             app.tasks.filter = crate::tasks::Filter::ProjectId(selected_id.clone());
-            app.tasks.filter_task_list();
+            app.tasks.filter_task_list(false);
             app.projects.selected_project = Some(selected_id);
         }
     } else if key.code == KeyCode::Char('k') || key.code == KeyCode::Up {
@@ -106,7 +106,7 @@ pub fn handle_projects(app: &mut App, key: KeyEvent) {
         if let Some(selected) = app.projects.state.selected() {
             let selected_id = app.projects.projects[selected].id.clone();
             app.tasks.filter = crate::tasks::Filter::ProjectId(selected_id.clone());
-            app.tasks.filter_task_list();
+            app.tasks.filter_task_list(false);
             app.projects.selected_project = Some(selected_id);
         }
     } else if key.code == KeyCode::Char('x') {
@@ -193,7 +193,7 @@ pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
             app.tasks.state = ListState::default();
             app.tasks.display_tasks.remove(selected);
             app.tasks.tasks.remove(index);
-            app.tasks.filter_task_list();
+            app.tasks.filter_task_list(true);
             tokio::spawn(async move {
                 close_task(&client, task_id).await.unwrap();
             });
@@ -211,7 +211,7 @@ pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
             app.tasks.state = ListState::default();
             app.tasks.display_tasks.remove(selected);
             app.tasks.tasks.remove(index);
-            app.tasks.filter_task_list();
+            app.tasks.filter_task_list(true);
             tokio::spawn(async move {
                 delete_task(&client, task_id).await.unwrap();
             });

@@ -66,7 +66,7 @@ impl Tasks {
         }
     }
 
-    pub fn filter_task_list(&mut self) {
+    pub fn filter_task_list(&mut self, auto_select: bool) {
         self.state = ListState::default();
         self.display_tasks = Vec::new();
         for (index, task) in self.tasks.iter().enumerate() {
@@ -99,6 +99,11 @@ impl Tasks {
                     }
                 }
             }
+        }
+        
+        // Automatically select the first item if there are any tasks and auto_select is true
+        if auto_select && !self.display_tasks.is_empty() {
+            self.state.select(Some(0));
         }
     }
 

@@ -8,7 +8,7 @@ use crate::tui::utils;
 pub fn help(f: &mut Frame) {
     let close_help = Line::from(vec![
         " To close, press ".into(),
-        "h".blue().bold(),
+        "z".blue().bold(),
         " again ".into(),
     ]);
     let block = Block::default()
@@ -36,6 +36,9 @@ pub fn help(f: &mut Frame) {
         Row::new(vec!["p", "Sort by priority"]),
         Row::new(vec!["d", "Sort by date"]),
         Row::new(vec!["Tab", "Switch between projects and tasks"]),
+        Row::new(vec!["h", "Switch to project view"]),
+        Row::new(vec!["l", "Switch to task view"]),
+        Row::new(vec!["z", "Show/hide help"]),
     ];
     let row_count = rows.len();
     let total_height = row_count + 5;
