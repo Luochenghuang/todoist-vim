@@ -171,7 +171,7 @@ async fn main() -> Result<()> {
                         app.tasks.filter = Filter::Overdue;
                         app.tasks.filter_task_list(true);
                         app.projects.unselect();
-                    } else if key.code == KeyCode::Char('a') {
+                    } else if key.code == KeyCode::Char('e') {
                         app.tasks.filter = Filter::All;
                         app.tasks.filter_task_list(true);
                         app.projects.unselect();

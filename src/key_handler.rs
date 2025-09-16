@@ -111,7 +111,7 @@ pub fn handle_projects(app: &mut App, key: KeyEvent) {
         }
     } else if key.code == KeyCode::Char('x') {
         todo!("DELETE PROJECT");
-    } else if key.code == KeyCode::Char('+') || key.code == KeyCode::Char('n') {
+    } else if key.code == KeyCode::Char('a') {
         if let Some(selected) = app.projects.state.selected() {
             let selected_id = app.projects.projects[selected].id.clone();
             app.show_new_task = true;
