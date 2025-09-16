@@ -117,8 +117,13 @@ async fn main() -> Result<()> {
         app.projects = projects;
         app.tasks = tasks;
         app.sections = sections;
-        app.tasks.filter_task_list(true);
+        app.tasks.filter_task_list(false);
         app.tasks.find_tasks_with_children();
+        
+        // Select the first project on startup
+        if !app.projects.projects.is_empty() {
+            app.projects.state.select(Some(0));
+        }
     });
 
     loop {
