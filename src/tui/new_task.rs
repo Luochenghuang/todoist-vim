@@ -24,6 +24,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
         .constraints(vec![
             Constraint::Length(3),
             Constraint::Length(5),
+            Constraint::Length(3),
             Constraint::Min(1),
         ])
         .split(inner_area);
@@ -48,6 +49,17 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             }),
     );
 
+    app.new_task.priority_string.set_block(
+        Block::default()
+            .borders(Borders::ALL)
+            .border_type(ratatui::widgets::BorderType::Rounded)
+            .title("Priority (1-4, 1=highest)")
+            .fg(match app.new_task.currently_editing {
+                CurrentlyEditing::Priority => Color::Indexed(47),
+                _ => Color::White,
+            }),
+    );
+
     app.new_task.due_string.set_block(
         Block::default()
             .borders(Borders::ALL)
@@ -61,11 +73,13 @@ pub fn editor(f: &mut Frame, app: &mut App) {
 
     let content = &app.new_task.content;
     let description = &app.new_task.description;
+    let priority_string = &app.new_task.priority_string;
     let due_string = &app.new_task.due_string;
 
     f.render_widget(content, vertical_split[0]);
     f.render_widget(description, vertical_split[1]);
-    f.render_widget(due_string, vertical_split[2]);
+    f.render_widget(priority_string, vertical_split[2]);
+    f.render_widget(due_string, vertical_split[3]);
 
     let close_modal_desc = Line::from(vec![
         " To save, press ".into(),

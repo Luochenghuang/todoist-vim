@@ -25,6 +25,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             Constraint::Length(3),
             Constraint::Length(5),
             Constraint::Length(3),
+            Constraint::Length(3),
             Constraint::Min(1),
         ])
         .split(inner_area);
@@ -87,6 +88,17 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             }),
     );
 
+    app.task_edit.priority_string.set_block(
+        Block::default()
+            .borders(Borders::ALL)
+            .border_type(ratatui::widgets::BorderType::Rounded)
+            .title(" Priority (1-4, 1=highest) ")
+            .fg(match app.task_edit.currently_editing {
+                CurrentlyEditing::Priority => Color::Indexed(47),
+                _ => Color::White,
+            }),
+    );
+
     app.task_edit
         .due_string
         .set_block(Block::default().borders(Borders::ALL).border_type(ratatui::widgets::BorderType::Rounded).title(" Due ").fg(
@@ -98,11 +110,13 @@ pub fn editor(f: &mut Frame, app: &mut App) {
 
     let content = &app.task_edit.content;
     let description = &app.task_edit.description;
+    let priority_string = &app.task_edit.priority_string;
     let due_string = &app.task_edit.due_string;
 
     f.render_widget(content, vertical_split[0]);
     f.render_widget(description, vertical_split[1]);
-    f.render_widget(due_string, vertical_split[2]);
+    f.render_widget(priority_string, vertical_split[2]);
+    f.render_widget(due_string, vertical_split[3]);
 
     let close_modal_desc = Line::from(vec![
         " To save, press ".into(),

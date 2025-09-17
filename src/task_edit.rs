@@ -8,6 +8,7 @@ use tui_textarea::TextArea;
 pub struct TaskEdit<'a> {
     pub content: TextArea<'a>,
     pub description: TextArea<'a>,
+    pub priority_string: TextArea<'a>,
     pub due_string: TextArea<'a>,
     pub currently_editing: CurrentlyEditing,
     pub children: Vec<usize>,
@@ -19,6 +20,7 @@ impl<'a> TaskEdit<'a> {
     pub fn new(
         content: String,
         description: String,
+        priority_string: String,
         due_string: String,
         children: Vec<usize>,
         current_task_index: usize,
@@ -27,6 +29,7 @@ impl<'a> TaskEdit<'a> {
         let mut task_edit = TaskEdit {
             content: TextArea::from(vec![content]),
             description: TextArea::from(vec![description]),
+            priority_string: TextArea::from(vec![priority_string]),
             due_string: TextArea::from(vec![due_string]),
             currently_editing,
             children,
@@ -82,11 +85,13 @@ impl<'a> TaskEdit<'a> {
 
         self.content.set_cursor_style(default_style);
         self.description.set_cursor_style(default_style);
+        self.priority_string.set_cursor_style(default_style);
         self.due_string.set_cursor_style(default_style);
 
         match self.currently_editing {
             CurrentlyEditing::Content => self.content.set_cursor_style(active_style),
             CurrentlyEditing::Description => self.description.set_cursor_style(active_style),
+            CurrentlyEditing::Priority => self.priority_string.set_cursor_style(active_style),
             CurrentlyEditing::DueString => self.due_string.set_cursor_style(active_style),
             CurrentlyEditing::ChildTasks => {}
         }
@@ -98,6 +103,7 @@ pub enum CurrentlyEditing {
     #[default]
     Content,
     Description,
+    Priority,
     DueString,
     ChildTasks,
 }

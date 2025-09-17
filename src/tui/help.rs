@@ -36,6 +36,7 @@ pub fn help(f: &mut Frame) {
         Row::new(vec!["e", "All tasks"]),
         Row::new(vec!["p", "Sort by priority"]),
         Row::new(vec!["d", "Sort by date"]),
+        Row::new(vec!["1-4", "Set task priority (1=highest, 4=lowest)"]),
         Row::new(vec!["Tab", "Switch between projects and tasks"]),
         Row::new(vec!["h", "Switch to project view"]),
         Row::new(vec!["l", "Switch to task view"]),

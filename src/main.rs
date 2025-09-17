@@ -117,13 +117,20 @@ async fn main() -> Result<()> {
         app.projects = projects;
         app.tasks = tasks;
         app.sections = sections;
-        app.tasks.filter_task_list(false);
         app.tasks.find_tasks_with_children();
         
-        // Select the first project on startup
+        // Select the first project on startup and filter tasks by it
         if !app.projects.projects.is_empty() {
             app.projects.state.select(Some(0));
+            let selected_id = app.projects.projects[0].id.clone();
+            app.tasks.filter = crate::tasks::Filter::ProjectId(selected_id.clone());
+            app.tasks.filter_task_list(false);
+            app.projects.selected_project = Some(selected_id);
+        } else {
+            app.tasks.filter_task_list(false);
         }
+        
+        app.tasks.sort_tasks(tasks::SortCriterion::Priority);
     });
 
     loop {

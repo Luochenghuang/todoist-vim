@@ -24,7 +24,7 @@ impl Tasks {
     pub fn new(items: Vec<Task>) -> Tasks {
         Tasks {
             tasks: items,
-            filter: Filter::Today,
+            filter: Filter::All,
             state: ListState::default(),
             tasks_with_children: HashMap::new(),
             display_tasks: Vec::new(),
@@ -48,7 +48,7 @@ impl Tasks {
                 self.display_tasks.sort_by(|a, b| {
                     let task_a = &self.tasks[*a];
                     let task_b = &self.tasks[*b];
-                    task_b.priority.cmp(&task_a.priority)
+                    task_a.priority.cmp(&task_b.priority)
                 });
             }
             SortCriterion::Date => {

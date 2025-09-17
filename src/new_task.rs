@@ -14,6 +14,8 @@ pub struct NewTask<'a> {
     pub labels: Option<Vec<String>>,
     pub priority: Option<u8>,
     #[serde(serialize_with = "serialize_text_area")]
+    pub priority_string: TextArea<'a>,
+    #[serde(serialize_with = "serialize_text_area")]
     pub due_string: TextArea<'a>,
     pub due_date: Option<String>,
     pub due_datetime: Option<String>,
@@ -31,6 +33,7 @@ pub enum CurrentlyEditing {
     Content,
     Description,
     DueString,
+    Priority,
 }
 
 fn serialize_text_area<S>(text: &TextArea, serializer: S) -> Result<S::Ok, S::Error>
@@ -54,6 +57,7 @@ impl<'a> NewTask<'a> {
         NewTask {
             project_id: Some(project_id),
             parent_id,
+            priority: Some(4), // Default to P4 (lowest priority)
             ..Default::default()
         }
     }

@@ -53,12 +53,12 @@ pub fn generate_list_item<'a>(
     width: usize,
     indentation_level: u8,
 ) -> ListItem<'a> {
-    let color = match priority {
-        1 => "P4",
-        2 => "P3",
-        3 => "P2",
-        4 => "P1",
-        _ => "",
+    let priority_emoji = match priority {
+        1 => "🔴", // Red circle for highest priority
+        2 => "🟠", // Orange circle for high priority
+        3 => "🟡", // Yellow circle for medium priority
+        4 => "  ", // Two spaces for lowest priority (P4)
+        _ => "  ", // Default to two spaces (P4)
     };
 
     let formatted_due = if let Some(due) = due {
@@ -82,13 +82,13 @@ pub fn generate_list_item<'a>(
 
     let indent = "  ".repeat(indentation_level as usize);
     let formatted_text = format!(
-        "{}[{}] {} {} {} - {}",
+        "{}[{}]{}{} {} {}",
         indent,
         if is_completed { "✓" } else { " " },
         if children > 0 { "⤷" } else { " " },
+        priority_emoji,
         content,
-        formatted_due,
-        color
+        formatted_due
     );
 
     let wrapped_text = fill(&formatted_text, width);
