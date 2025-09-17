@@ -69,41 +69,69 @@ impl Tasks {
     pub fn filter_task_list(&mut self, auto_select: bool) {
         self.state = ListState::default();
         self.display_tasks = Vec::new();
+        
+        // Get root tasks (tasks without parent_id) that match the filter
+        let mut root_tasks = Vec::new();
         for (index, task) in self.tasks.iter().enumerate() {
-            if let Some(_) = task.parent_id {
-                continue;
-            }
-            match &self.filter {
-                Filter::All => {
-                    self.display_tasks.push(index);
-                }
-                Filter::Today => {
-                    let today = Local::now().date_naive();
-                    if let Some(due) = &task.due {
-                        if due.date == today {
-                            self.display_tasks.push(index);
+            if task.parent_id.is_none() {
+                let matches_filter = match &self.filter {
+                    Filter::All => true,
+                    Filter::Today => {
+                        let today = Local::now().date_naive();
+                        if let Some(due) = &task.due {
+                            due.date == today
+                        } else {
+                            false
                         }
                     }
-                }
-                Filter::ProjectId(project_id) => {
-                    if task.project_id == *project_id {
-                        self.display_tasks.push(index);
+                    Filter::ProjectId(project_id) => {
+                        task.project_id == *project_id
                     }
-                }
-                Filter::Overdue => {
-                    let today = Local::now().date_naive();
-                    if let Some(due) = &task.due {
-                        if due.date < today {
-                            self.display_tasks.push(index);
+                    Filter::Overdue => {
+                        let today = Local::now().date_naive();
+                        if let Some(due) = &task.due {
+                            due.date < today
+                        } else {
+                            false
                         }
                     }
+                };
+                
+                if matches_filter {
+                    root_tasks.push(index);
                 }
             }
+        }
+        
+        // Build tree structure by adding subtasks after their parents
+        for root_index in root_tasks {
+            self.display_tasks.push(root_index);
+            self.add_subtasks_recursively(root_index);
         }
         
         // Automatically select the first item if there are any tasks and auto_select is true
         if auto_select && !self.display_tasks.is_empty() {
             self.state.select(Some(0));
+        }
+    }
+    
+    fn add_subtasks_recursively(&mut self, parent_index: usize) {
+        let parent_id = &self.tasks[parent_index].id;
+        
+        // Find all direct children of this parent
+        let mut children: Vec<usize> = self.tasks.iter()
+            .enumerate()
+            .filter(|(_, task)| task.parent_id.as_ref() == Some(parent_id))
+            .map(|(index, _)| index)
+            .collect();
+        
+        // Sort children by order field
+        children.sort_by_key(|&index| self.tasks[index].order);
+        
+        // Add children and their subtasks recursively
+        for child_index in children {
+            self.display_tasks.push(child_index);
+            self.add_subtasks_recursively(child_index);
         }
     }
 

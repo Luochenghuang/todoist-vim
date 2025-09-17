@@ -80,7 +80,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .borders(Borders::ALL)
         .border_type(ratatui::widgets::BorderType::Rounded)
         .fg(match app.current_focus {
-            CurrentFocus::Projects => Color::Red,
+            CurrentFocus::Projects => Color::Indexed(47),
             _ => Color::White,
         });
 
@@ -106,7 +106,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .borders(Borders::ALL)
         .border_type(ratatui::widgets::BorderType::Rounded)
         .fg(match app.current_focus {
-            CurrentFocus::Tasks => Color::Red,
+            CurrentFocus::Tasks => Color::Indexed(47),
             _ => Color::White,
         });
 
@@ -115,6 +115,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     for i in &app.tasks.display_tasks {
         let task = &app.tasks.tasks[*i];
         let children: u16 = *app.tasks.tasks_with_children.get(&task.id).unwrap_or(&0);
+        let indentation_level = calculate_indentation_level(&app.tasks.tasks, task);
         task_list_item.push(utils::generate_list_item(
             &task.content,
             &task.due,
@@ -122,6 +123,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             task.is_completed,
             children,
             task_list_width - 4,
+            indentation_level,
         ))
     }
 
@@ -154,4 +156,20 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     if app.show_error {
         error::render_error_modal(f, app);
     }
+}
+
+fn calculate_indentation_level(tasks: &Vec<crate::tasks::Task>, task: &crate::tasks::Task) -> u8 {
+    let mut level = 0;
+    let mut current_parent_id = task.parent_id.clone();
+    
+    while let Some(parent_id) = current_parent_id {
+        if let Some(parent_task) = tasks.iter().find(|t| t.id == parent_id) {
+            level += 1;
+            current_parent_id = parent_task.parent_id.clone();
+        } else {
+            break;
+        }
+    }
+    
+    level
 }

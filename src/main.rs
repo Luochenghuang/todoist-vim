@@ -168,9 +168,12 @@ async fn main() -> Result<()> {
                         app.tasks.filter_task_list(true);
                         app.projects.unselect();
                     } else if key.code == KeyCode::Char('o') {
-                        app.tasks.filter = Filter::Overdue;
-                        app.tasks.filter_task_list(true);
-                        app.projects.unselect();
+                        // Only apply overdue filter if not in task focus
+                        if app.current_focus != CurrentFocus::Tasks {
+                            app.tasks.filter = Filter::Overdue;
+                            app.tasks.filter_task_list(true);
+                            app.projects.unselect();
+                        }
                     } else if key.code == KeyCode::Char('e') {
                         app.tasks.filter = Filter::All;
                         app.tasks.filter_task_list(true);

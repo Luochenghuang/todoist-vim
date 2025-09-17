@@ -36,7 +36,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
         .borders(Borders::ALL)
         .border_type(ratatui::widgets::BorderType::Rounded)
         .fg(match app.task_edit.currently_editing {
-            CurrentlyEditing::ChildTasks => Color::Red,
+            CurrentlyEditing::ChildTasks => Color::Indexed(47),
             _ => Color::White,
         });
 
@@ -44,6 +44,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
     for i in &app.task_edit.children {
         let task = &app.tasks.tasks[*i];
         let children: u16 = *app.tasks.tasks_with_children.get(&task.id).unwrap_or(&0);
+        let indentation_level = calculate_indentation_level(&app.tasks.tasks, task);
         task_list_item.push(utils::generate_list_item(
             &task.content,
             &task.due,
@@ -51,6 +52,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             task.is_completed,
             children,
             task_list_width - 4,
+            indentation_level,
         ))
     }
 
@@ -69,7 +71,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
         .content
         .set_block(Block::default().borders(Borders::ALL).border_type(ratatui::widgets::BorderType::Rounded).title(" Task ").fg(
             match app.task_edit.currently_editing {
-                CurrentlyEditing::Content => Color::Red,
+                CurrentlyEditing::Content => Color::Indexed(47),
                 _ => Color::White,
             },
         ));
@@ -80,7 +82,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             .border_type(ratatui::widgets::BorderType::Rounded)
             .title(" Description ")
             .fg(match app.task_edit.currently_editing {
-                CurrentlyEditing::Description => Color::Red,
+                CurrentlyEditing::Description => Color::Indexed(47),
                 _ => Color::White,
             }),
     );
@@ -89,7 +91,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
         .due_string
         .set_block(Block::default().borders(Borders::ALL).border_type(ratatui::widgets::BorderType::Rounded).title(" Due ").fg(
             match app.task_edit.currently_editing {
-                CurrentlyEditing::DueString => Color::Red,
+                CurrentlyEditing::DueString => Color::Indexed(47),
                 _ => Color::White,
             },
         ));
@@ -122,4 +124,20 @@ pub fn editor(f: &mut Frame, app: &mut App) {
     );
 
     f.render_widget(block, area);
+}
+
+fn calculate_indentation_level(tasks: &Vec<crate::tasks::Task>, task: &crate::tasks::Task) -> u8 {
+    let mut level = 0;
+    let mut current_parent_id = task.parent_id.clone();
+    
+    while let Some(parent_id) = current_parent_id {
+        if let Some(parent_task) = tasks.iter().find(|t| t.id == parent_id) {
+            level += 1;
+            current_parent_id = parent_task.parent_id.clone();
+        } else {
+            break;
+        }
+    }
+    
+    level
 }

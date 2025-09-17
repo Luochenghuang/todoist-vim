@@ -32,7 +32,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
         .content
         .set_block(Block::default().borders(Borders::ALL).border_type(ratatui::widgets::BorderType::Rounded).title("Task").fg(
             match app.new_task.currently_editing {
-                CurrentlyEditing::Content => Color::Red,
+                CurrentlyEditing::Content => Color::Indexed(47),
                 _ => Color::White,
             },
         ));
@@ -43,7 +43,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             .border_type(ratatui::widgets::BorderType::Rounded)
             .title("Description")
             .fg(match app.new_task.currently_editing {
-                CurrentlyEditing::Description => Color::Red,
+                CurrentlyEditing::Description => Color::Indexed(47),
                 _ => Color::White,
             }),
     );
@@ -54,7 +54,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             .border_type(ratatui::widgets::BorderType::Rounded)
             .title("Due String")
             .fg(match app.new_task.currently_editing {
-                CurrentlyEditing::DueString => Color::Red,
+                CurrentlyEditing::DueString => Color::Indexed(47),
                 _ => Color::White,
             }),
     );

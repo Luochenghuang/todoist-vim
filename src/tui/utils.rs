@@ -51,6 +51,7 @@ pub fn generate_list_item<'a>(
     is_completed: bool,
     children: u16,
     width: usize,
+    indentation_level: u8,
 ) -> ListItem<'a> {
     let color = match priority {
         1 => "P4",
@@ -79,8 +80,10 @@ pub fn generate_list_item<'a>(
         String::new()
     };
 
+    let indent = "  ".repeat(indentation_level as usize);
     let formatted_text = format!(
-        "[{}] {} {} {} - {}",
+        "{}[{}] {} {} {} - {}",
+        indent,
         if is_completed { "✓" } else { " " },
         if children > 0 { "⤷" } else { " " },
         content,

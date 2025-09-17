@@ -32,7 +32,7 @@ pub fn help(f: &mut Frame) {
             "a",
             "Press a to add task to the selected project",
         ]),
-        Row::new(vec!["o", "Overdue tasks"]),
+        Row::new(vec!["o", "Overdue tasks (or create subtask when task selected)"]),
         Row::new(vec!["e", "All tasks"]),
         Row::new(vec!["p", "Sort by priority"]),
         Row::new(vec!["d", "Sort by date"]),

@@ -222,5 +222,13 @@ pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
                 delete_task(&client, task_id).await.unwrap();
             });
         }
+    } else if key.code == KeyCode::Char('o') {
+        // Create subtask for selected task
+        if let Some(selected) = app.tasks.state.selected() {
+            let index = app.tasks.display_tasks[selected];
+            let selected_task = &app.tasks.tasks[index];
+            app.show_new_task = true;
+            app.new_task = new_task::NewTask::new(selected_task.project_id.clone(), Some(selected_task.id.clone()));
+        }
     }
 }
