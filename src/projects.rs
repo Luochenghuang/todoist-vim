@@ -6,9 +6,10 @@ pub struct Projects {
     pub projects: Vec<Project>,
     pub state: ListState,
     pub selected_project: Option<String>,
+    pub move_mode: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub struct Project {
     pub id: String,
@@ -25,7 +26,7 @@ pub struct Project {
     pub parent_id: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ListType {
     Board,
@@ -38,6 +39,7 @@ impl Projects {
             projects: items,
             state: ListState::default(),
             selected_project: None,
+            move_mode: false,
         }
     }
 
@@ -85,5 +87,27 @@ impl Projects {
         let offset = self.state.offset();
         self.state.select(None);
         *self.state.offset_mut() = offset;
+    }
+
+    pub fn toggle_move_mode(&mut self) {
+        self.move_mode = !self.move_mode;
+    }
+
+    pub fn move_up(&mut self) {
+        if let Some(selected) = self.state.selected() {
+            if selected > 0 {
+                self.projects.swap(selected, selected - 1);
+                self.state.select(Some(selected - 1));
+            }
+        }
+    }
+
+    pub fn move_down(&mut self) {
+        if let Some(selected) = self.state.selected() {
+            if selected < self.projects.len() - 1 {
+                self.projects.swap(selected, selected + 1);
+                self.state.select(Some(selected + 1));
+            }
+        }
     }
 }

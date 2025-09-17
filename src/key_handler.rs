@@ -108,29 +108,51 @@ pub fn handle_task_editor(
 }
 
 pub fn handle_projects(app: &mut App, key: KeyEvent) {
-    if key.code == KeyCode::Char('j') || key.code == KeyCode::Down {
-        app.projects.next();
-        if let Some(selected) = app.projects.state.selected() {
-            let selected_id = app.projects.projects[selected].id.clone();
-            app.tasks.filter = crate::tasks::Filter::ProjectId(selected_id.clone());
-            app.tasks.filter_task_list(false);
-            app.projects.selected_project = Some(selected_id);
+    if app.projects.move_mode {
+        // In move mode, j/k move projects up/down
+        if key.code == KeyCode::Char('j') || key.code == KeyCode::Down {
+            app.projects.move_down();
+        } else if key.code == KeyCode::Char('k') || key.code == KeyCode::Up {
+            app.projects.move_up();
+        } else if key.code == KeyCode::Esc || key.code == KeyCode::Char('m') {
+            // Exit move mode and save project order
+            app.projects.move_mode = false;
+            let project_order: Vec<String> = app.projects.projects.iter().map(|p| p.id.clone()).collect();
+            tokio::spawn(async move {
+                if let Err(e) = crate::save_project_order(&project_order) {
+                    eprintln!("Failed to save project order: {}", e);
+                }
+            });
         }
-    } else if key.code == KeyCode::Char('k') || key.code == KeyCode::Up {
-        app.projects.previous();
-        if let Some(selected) = app.projects.state.selected() {
-            let selected_id = app.projects.projects[selected].id.clone();
-            app.tasks.filter = crate::tasks::Filter::ProjectId(selected_id.clone());
-            app.tasks.filter_task_list(false);
-            app.projects.selected_project = Some(selected_id);
-        }
-    } else if key.code == KeyCode::Char('x') {
-        todo!("DELETE PROJECT");
-    } else if key.code == KeyCode::Char('a') {
-        if let Some(selected) = app.projects.state.selected() {
-            let selected_id = app.projects.projects[selected].id.clone();
-            app.show_new_task = true;
-            app.new_task = new_task::NewTask::new(selected_id, None);
+    } else {
+        // Normal mode
+        if key.code == KeyCode::Char('j') || key.code == KeyCode::Down {
+            app.projects.next();
+            if let Some(selected) = app.projects.state.selected() {
+                let selected_id = app.projects.projects[selected].id.clone();
+                app.tasks.filter = crate::tasks::Filter::ProjectId(selected_id.clone());
+                app.tasks.filter_task_list(false);
+                app.projects.selected_project = Some(selected_id);
+            }
+        } else if key.code == KeyCode::Char('k') || key.code == KeyCode::Up {
+            app.projects.previous();
+            if let Some(selected) = app.projects.state.selected() {
+                let selected_id = app.projects.projects[selected].id.clone();
+                app.tasks.filter = crate::tasks::Filter::ProjectId(selected_id.clone());
+                app.tasks.filter_task_list(false);
+                app.projects.selected_project = Some(selected_id);
+            }
+        } else if key.code == KeyCode::Char('m') {
+            // Enter move mode
+            app.projects.move_mode = true;
+        } else if key.code == KeyCode::Char('x') {
+            todo!("DELETE PROJECT");
+        } else if key.code == KeyCode::Char('a') {
+            if let Some(selected) = app.projects.state.selected() {
+                let selected_id = app.projects.projects[selected].id.clone();
+                app.show_new_task = true;
+                app.new_task = new_task::NewTask::new(selected_id, None);
+            }
         }
     }
 }

@@ -108,7 +108,25 @@ async fn main() -> Result<()> {
     let initialise_task = tokio::spawn(async move {
         // todo: make network calls parallel
         let project_resp = api_calls::fetch_projects(&client_clone).await.unwrap();
-        let projects = Projects::new(project_resp);
+        let mut projects = Projects::new(project_resp);
+        
+        // Apply saved project order if available
+        if let Some(saved_order) = load_project_order() {
+            let mut reordered_projects = Vec::new();
+            let mut remaining_projects = projects.projects.clone();
+            
+            // First, add projects in the saved order
+            for project_id in &saved_order {
+                if let Some(pos) = remaining_projects.iter().position(|p| p.id == *project_id) {
+                    reordered_projects.push(remaining_projects.remove(pos));
+                }
+            }
+            
+            // Then add any remaining projects that weren't in the saved order
+            reordered_projects.extend(remaining_projects);
+            
+            projects.projects = reordered_projects;
+        }
         let task_resp = api_calls::fetch_tasks(&client_clone).await.unwrap();
         let tasks = Tasks::new(task_resp);
         let mut app = app_clone.lock().await;
@@ -268,6 +286,49 @@ async fn main() -> Result<()> {
 #[derive(Deserialize, Serialize)]
 struct Config {
     bearer_token: String,
+    project_order: Option<Vec<String>>,
+}
+
+pub fn save_project_order(project_order: &[String]) -> Result<(), Box<dyn std::error::Error>> {
+    match config_dir() {
+        Some(home) => {
+            let path = Path::new(&home);
+            let config_dir = path.join(".todoist");
+            let config_file_path = &config_dir.join("config.json");
+
+            if config_file_path.exists() {
+                let file = File::open(config_file_path)?;
+                let reader = BufReader::new(file);
+                let mut config: Config = serde_json::from_reader(reader)?;
+                config.project_order = Some(project_order.to_vec());
+                
+                let config_json = serde_json::to_string(&config)?;
+                fs::write(config_file_path, config_json)?;
+            }
+        }
+        None => return Err("No config directory found".into()),
+    }
+    Ok(())
+}
+
+fn load_project_order() -> Option<Vec<String>> {
+    match config_dir() {
+        Some(home) => {
+            let path = Path::new(&home);
+            let config_dir = path.join(".todoist");
+            let config_file_path = &config_dir.join("config.json");
+
+            if config_file_path.exists() {
+                let file = File::open(config_file_path).ok()?;
+                let reader = BufReader::new(file);
+                let config: Config = serde_json::from_reader(reader).ok()?;
+                config.project_order
+            } else {
+                None
+            }
+        }
+        None => None,
+    }
 }
 
 fn get_token() -> String {
@@ -317,6 +378,7 @@ fn get_token() -> String {
 
                 let config = Config {
                     bearer_token: client_key.clone(),
+                    project_order: None,
                 };
 
                 let config_json = serde_json::to_string(&config).unwrap();

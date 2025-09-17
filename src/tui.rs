@@ -75,8 +75,14 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         ))));
     }
 
+    let title_text = if app.projects.move_mode {
+        " My projects (Move Mode) ".bold()
+    } else {
+        " My projects ".bold()
+    };
+
     let my_projects_block = Block::default()
-        .title(" My projects ".bold())
+        .title(title_text)
         .borders(Borders::ALL)
         .border_type(ratatui::widgets::BorderType::Rounded)
         .fg(match app.current_focus {
@@ -84,9 +90,18 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             _ => Color::White,
         });
 
+    let highlight_style = if app.projects.move_mode {
+        Style::default()
+            .add_modifier(Modifier::BOLD)
+            .add_modifier(Modifier::REVERSED)
+            .fg(Color::Red)
+    } else {
+        Style::default().add_modifier(Modifier::BOLD)
+    };
+
     let list = List::new(list_items)
         .block(my_projects_block)
-        .highlight_style(Style::default().add_modifier(Modifier::BOLD))
+        .highlight_style(highlight_style)
         .highlight_symbol(">")
         .highlight_spacing(HighlightSpacing::Always);
     f.render_stateful_widget(list, inner_layout[0], &mut app.projects.state);
