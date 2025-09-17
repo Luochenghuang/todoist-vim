@@ -30,9 +30,9 @@ pub fn editor(f: &mut Frame, app: &mut App) {
 
     app.new_task
         .content
-        .set_block(Block::default().borders(Borders::ALL).title("Task").fg(
+        .set_block(Block::default().borders(Borders::ALL).border_type(ratatui::widgets::BorderType::Rounded).title("Task").fg(
             match app.new_task.currently_editing {
-                CurrentlyEditing::Content => Color::Indexed(47),
+                CurrentlyEditing::Content => Color::Red,
                 _ => Color::White,
             },
         ));
@@ -40,9 +40,10 @@ pub fn editor(f: &mut Frame, app: &mut App) {
     app.new_task.description.set_block(
         Block::default()
             .borders(Borders::ALL)
+            .border_type(ratatui::widgets::BorderType::Rounded)
             .title("Description")
             .fg(match app.new_task.currently_editing {
-                CurrentlyEditing::Description => Color::Indexed(47),
+                CurrentlyEditing::Description => Color::Red,
                 _ => Color::White,
             }),
     );
@@ -50,9 +51,10 @@ pub fn editor(f: &mut Frame, app: &mut App) {
     app.new_task.due_string.set_block(
         Block::default()
             .borders(Borders::ALL)
+            .border_type(ratatui::widgets::BorderType::Rounded)
             .title("Due String")
             .fg(match app.new_task.currently_editing {
-                CurrentlyEditing::DueString => Color::Indexed(47),
+                CurrentlyEditing::DueString => Color::Red,
                 _ => Color::White,
             }),
     );
@@ -75,7 +77,8 @@ pub fn editor(f: &mut Frame, app: &mut App) {
     let block = Block::default()
         .title(" New task ")
         .title_bottom(close_modal_desc.centered())
-        .borders(Borders::ALL);
+        .borders(Borders::ALL)
+        .border_type(ratatui::widgets::BorderType::Rounded);
 
     f.render_widget(block, area);
 }

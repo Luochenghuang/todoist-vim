@@ -31,6 +31,7 @@ pub fn render_error_modal(f: &mut Frame, app: &mut App) {
         .title(" Error ")
         .title_bottom(close_error.centered())
         .borders(Borders::ALL)
+        .border_type(ratatui::widgets::BorderType::Rounded)
         .border_style(ratatui::style::Style::default().fg(ratatui::style::Color::Red));
 
     // Create the paragraph with the error message

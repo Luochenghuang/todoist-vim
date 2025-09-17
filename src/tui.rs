@@ -45,6 +45,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
 
     let title_block = Block::default()
         .borders(Borders::ALL)
+        .border_type(ratatui::widgets::BorderType::Rounded)
         .style(Style::default());
 
     let title = Paragraph::new(Text::styled(
@@ -77,8 +78,9 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     let my_projects_block = Block::default()
         .title(" My projects ".bold())
         .borders(Borders::ALL)
+        .border_type(ratatui::widgets::BorderType::Rounded)
         .fg(match app.current_focus {
-            CurrentFocus::Projects => Color::Indexed(47),
+            CurrentFocus::Projects => Color::Red,
             _ => Color::White,
         });
 
@@ -102,8 +104,9 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .title(task_title.bold())
         .title_bottom(instructions.centered())
         .borders(Borders::ALL)
+        .border_type(ratatui::widgets::BorderType::Rounded)
         .fg(match app.current_focus {
-            CurrentFocus::Tasks => Color::Indexed(47),
+            CurrentFocus::Tasks => Color::Red,
             _ => Color::White,
         });
 

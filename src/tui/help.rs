@@ -14,7 +14,8 @@ pub fn help(f: &mut Frame) {
     let block = Block::default()
         .title(" Help ")
         .title_bottom(close_help.centered())
-        .borders(Borders::ALL);
+        .borders(Borders::ALL)
+        .border_type(ratatui::widgets::BorderType::Rounded);
 
     let rows = [
         Row::new(vec!["t", "Today's tasks"]),
