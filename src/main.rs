@@ -229,7 +229,21 @@ async fn main() -> Result<()> {
                     if !task_exists {
                         app.tasks.tasks.push(task);
                     }
-                    app.tasks.filter_task_list(true);
+                    
+                    // Preserve current cursor position when refreshing the task list
+                    let current_selection = app.tasks.state.selected();
+                    app.tasks.filter_task_list(false);
+                    
+                    // Restore cursor position if it was valid
+                    if let Some(selection) = current_selection {
+                        let display_tasks_len = app.tasks.display_tasks.len();
+                        if selection < display_tasks_len {
+                            app.tasks.state.select(Some(selection));
+                        } else if display_tasks_len > 0 {
+                            // If the old selection is out of bounds, select the last item
+                            app.tasks.state.select(Some(display_tasks_len - 1));
+                        }
+                    }
                 }
                 TaskResult::Error(error_msg) => {
                     app.set_error_message(error_msg);

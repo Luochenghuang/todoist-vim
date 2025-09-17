@@ -1,5 +1,4 @@
 use crossterm::event::{KeyCode, KeyEvent};
-use ratatui::widgets::ListState;
 use reqwest::Client;
 
 use crate::{
@@ -190,10 +189,23 @@ pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
         if let Some(selected) = app.tasks.state.selected() {
             let index = app.tasks.display_tasks[selected];
             let task_id = app.tasks.tasks[index].id.clone();
-            app.tasks.state = ListState::default();
+            
+            // Calculate new selection position before removing the task
+            let new_selection = if selected > 0 { Some(selected - 1) } else if app.tasks.display_tasks.len() > 1 { Some(0) } else { None };
+            
             app.tasks.display_tasks.remove(selected);
             app.tasks.tasks.remove(index);
-            app.tasks.filter_task_list(true);
+            
+            // Update display_tasks indices after removal
+            for i in 0..app.tasks.display_tasks.len() {
+                if app.tasks.display_tasks[i] > index {
+                    app.tasks.display_tasks[i] -= 1;
+                }
+            }
+            
+            // Set the new selection
+            app.tasks.state.select(new_selection);
+            
             tokio::spawn(async move {
                 close_task(&client, task_id).await.unwrap();
             });
@@ -214,10 +226,23 @@ pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
         if let Some(selected) = app.tasks.state.selected() {
             let index = app.tasks.display_tasks[selected];
             let task_id = app.tasks.tasks[index].id.clone();
-            app.tasks.state = ListState::default();
+            
+            // Calculate new selection position before removing the task
+            let new_selection = if selected > 0 { Some(selected - 1) } else if app.tasks.display_tasks.len() > 1 { Some(0) } else { None };
+            
             app.tasks.display_tasks.remove(selected);
             app.tasks.tasks.remove(index);
-            app.tasks.filter_task_list(true);
+            
+            // Update display_tasks indices after removal
+            for i in 0..app.tasks.display_tasks.len() {
+                if app.tasks.display_tasks[i] > index {
+                    app.tasks.display_tasks[i] -= 1;
+                }
+            }
+            
+            // Set the new selection
+            app.tasks.state.select(new_selection);
+            
             tokio::spawn(async move {
                 delete_task(&client, task_id).await.unwrap();
             });
