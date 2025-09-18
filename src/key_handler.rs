@@ -64,7 +64,7 @@ pub fn handle_task_editor(
     } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Description {
         app.task_edit.description.input(key);
     } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Priority {
-        app.task_edit.priority_string.input(key);
+        handle_priority_input(&mut app.task_edit.priority_string, key);
     } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::DueString {
         app.task_edit.due_string.input(key);
     } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::ChildTasks {
@@ -205,7 +205,7 @@ pub fn handle_new_tasks(
     } else if app.new_task.currently_editing == new_task::CurrentlyEditing::Description {
         app.new_task.description.input(key);
     } else if app.new_task.currently_editing == new_task::CurrentlyEditing::Priority {
-        app.new_task.priority_string.input(key);
+        handle_priority_input(&mut app.new_task.priority_string, key);
     } else if app.new_task.currently_editing == new_task::CurrentlyEditing::DueString {
         app.new_task.due_string.input(key);
     }
@@ -409,6 +409,26 @@ fn find_all_children(tasks: &Vec<Task>, parent_id: &String, tasks_to_delete: &mu
                 // Recursively find children of this child
                 find_all_children(tasks, &task.id, tasks_to_delete);
             }
+        }
+    }
+}
+
+fn handle_priority_input(priority_string: &mut tui_textarea::TextArea, key: KeyEvent) {
+    match key.code {
+        KeyCode::Char(c) if c.is_ascii_digit() && c >= '1' && c <= '4' => {
+            // Clear existing content and set the new digit
+            *priority_string = tui_textarea::TextArea::from(vec![c.to_string()]);
+        }
+        KeyCode::Backspace => {
+            // Allow backspace to clear the content
+            *priority_string = tui_textarea::TextArea::from(vec!["".to_string()]);
+        }
+        KeyCode::Delete => {
+            // Allow delete to clear the content
+            *priority_string = tui_textarea::TextArea::from(vec!["".to_string()]);
+        }
+        _ => {
+            // Ignore all other keys (including invalid digits like 0, 5-9)
         }
     }
 }
