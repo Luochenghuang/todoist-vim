@@ -147,8 +147,6 @@ async fn main() -> Result<()> {
         } else {
             app.tasks.filter_task_list(false);
         }
-        
-        app.tasks.sort_tasks(tasks::SortCriterion::Priority);
     });
 
     loop {

@@ -43,16 +43,67 @@ impl Tasks {
     }
 
     pub fn sort_tasks(&mut self, criterion: SortCriterion) {
+        // Instead of sorting the entire display_tasks vector, we need to rebuild it
+        // with proper hierarchical sorting that preserves parent-child relationships
+        self.sort_tasks_hierarchically(criterion);
+    }
+
+    fn sort_tasks_hierarchically(&mut self, criterion: SortCriterion) {
+        // Store the currently selected task ID to preserve selection after sorting
+        let selected_task_id = if let Some(selected_index) = self.state.selected() {
+            if selected_index < self.display_tasks.len() {
+                Some(self.tasks[self.display_tasks[selected_index]].id.clone())
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+        
+        // Get root tasks (tasks without parent_id) that match the filter
+        let mut root_tasks = Vec::new();
+        for (index, task) in self.tasks.iter().enumerate() {
+            if task.parent_id.is_none() {
+                let matches_filter = match &self.filter {
+                    Filter::All => true,
+                    Filter::Today => {
+                        let today = Local::now().date_naive();
+                        if let Some(due) = &task.due {
+                            due.date == today
+                        } else {
+                            false
+                        }
+                    }
+                    Filter::ProjectId(project_id) => {
+                        task.project_id == *project_id
+                    }
+                    Filter::Overdue => {
+                        let today = Local::now().date_naive();
+                        if let Some(due) = &task.due {
+                            due.date < today
+                        } else {
+                            false
+                        }
+                    }
+                };
+                
+                if matches_filter {
+                    root_tasks.push(index);
+                }
+            }
+        }
+        
+        // Sort root tasks by the specified criterion
         match criterion {
             SortCriterion::Priority => {
-                self.display_tasks.sort_by(|a, b| {
+                root_tasks.sort_by(|a, b| {
                     let task_a = &self.tasks[*a];
                     let task_b = &self.tasks[*b];
                     task_a.priority.cmp(&task_b.priority)
                 });
             }
             SortCriterion::Date => {
-                self.display_tasks.sort_by(|a, b| {
+                root_tasks.sort_by(|a, b| {
                     let task_a = &self.tasks[*a];
                     let task_b = &self.tasks[*b];
                     match (&task_a.due, &task_b.due) {
@@ -62,6 +113,27 @@ impl Tasks {
                         (None, None) => std::cmp::Ordering::Equal,
                     }
                 });
+            }
+        }
+        
+        // Rebuild display_tasks with sorted root tasks and their subtasks
+        self.display_tasks = Vec::new();
+        for root_index in root_tasks {
+            self.display_tasks.push(root_index);
+            self.add_subtasks_recursively(root_index);
+        }
+        
+        // Restore selection to the same task if it still exists in the display list
+        if let Some(task_id) = selected_task_id {
+            if let Some(new_index) = self.display_tasks.iter().position(|&idx| self.tasks[idx].id == task_id) {
+                self.state.select(Some(new_index));
+            } else {
+                // If the selected task is no longer visible, select the first task
+                if !self.display_tasks.is_empty() {
+                    self.state.select(Some(0));
+                } else {
+                    self.state.select(None);
+                }
             }
         }
     }
@@ -102,6 +174,13 @@ impl Tasks {
                 }
             }
         }
+        
+        // Sort root tasks by priority by default
+        root_tasks.sort_by(|a, b| {
+            let task_a = &self.tasks[*a];
+            let task_b = &self.tasks[*b];
+            task_a.priority.cmp(&task_b.priority)
+        });
         
         // Build tree structure by adding subtasks after their parents
         for root_index in root_tasks {

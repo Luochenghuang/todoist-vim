@@ -252,9 +252,6 @@ pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
             // Recursively find all children
             find_all_children(&app.tasks.tasks, &task_id, &mut tasks_to_complete);
             
-            // Calculate new selection position before removing tasks
-            let new_selection = if selected > 0 { Some(selected - 1) } else if app.tasks.display_tasks.len() > 1 { Some(0) } else { None };
-            
             // Remove all tasks (parent + children) from the tasks list
             // Sort indices in descending order to avoid index shifting issues
             let mut indices_to_remove: Vec<usize> = tasks_to_complete.iter()
@@ -268,6 +265,17 @@ pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
             
             // Rebuild display_tasks list to ensure valid indices
             app.tasks.filter_task_list(false);
+            
+            // Calculate new selection position after rebuilding the list
+            let new_selection = if app.tasks.display_tasks.is_empty() {
+                None
+            } else if selected > 0 && selected <= app.tasks.display_tasks.len() {
+                // Try to select the previous position, but clamp to valid range
+                Some((selected - 1).min(app.tasks.display_tasks.len() - 1))
+            } else {
+                // If we were at the beginning or the list is shorter now, select the first item
+                Some(0)
+            };
             
             // Set the new selection
             app.tasks.state.select(new_selection);
@@ -297,15 +305,25 @@ pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
             let index = app.tasks.display_tasks[selected];
             let task_id = app.tasks.tasks[index].id.clone();
             
+            // Store the task ID that should be selected after deletion
+            // We'll try to select the next task in the display order, or the previous one if at the end
+            let target_task_id = if selected + 1 < app.tasks.display_tasks.len() {
+                // Select the next task
+                Some(app.tasks.tasks[app.tasks.display_tasks[selected + 1]].id.clone())
+            } else if selected > 0 {
+                // Select the previous task
+                Some(app.tasks.tasks[app.tasks.display_tasks[selected - 1]].id.clone())
+            } else {
+                // No other tasks to select
+                None
+            };
+            
             // Find all children (and their children) to delete
             let mut tasks_to_delete = Vec::new();
             tasks_to_delete.push(task_id.clone());
             
             // Recursively find all children
             find_all_children(&app.tasks.tasks, &task_id, &mut tasks_to_delete);
-            
-            // Calculate new selection position before removing tasks
-            let new_selection = if selected > 0 { Some(selected - 1) } else if app.tasks.display_tasks.len() > 1 { Some(0) } else { None };
             
             // Remove all tasks (parent + children) from the tasks list
             // Sort indices in descending order to avoid index shifting issues
@@ -321,8 +339,24 @@ pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
             // Rebuild display_tasks list to ensure valid indices
             app.tasks.filter_task_list(false);
             
-            // Set the new selection
-            app.tasks.state.select(new_selection);
+            // Restore selection to the target task if it still exists
+            if let Some(target_id) = target_task_id {
+                if let Some(new_index) = app.tasks.display_tasks.iter().position(|&idx| app.tasks.tasks[idx].id == target_id) {
+                    app.tasks.state.select(Some(new_index));
+                } else if !app.tasks.display_tasks.is_empty() {
+                    // If target task is no longer visible, select the first task
+                    app.tasks.state.select(Some(0));
+                } else {
+                    app.tasks.state.select(None);
+                }
+            } else {
+                // No target task, select first if available
+                if !app.tasks.display_tasks.is_empty() {
+                    app.tasks.state.select(Some(0));
+                } else {
+                    app.tasks.state.select(None);
+                }
+            }
             
             // Delete all tasks from the API
             for task_id_to_delete in tasks_to_delete {
